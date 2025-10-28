@@ -1,0 +1,25 @@
+numbers = (10, 20, 30, 40)
+
+# Convert to list
+numbers_list = list(numbers)
+
+print(numbers)
+#add 15 to the list
+numbers_list.insert(1,15)
+#add 50,60,70 to the list
+print(numbers_list)
+numbers_list.append (50,)
+print(numbers_list)
+numbers_list.append (60)
+numbers_list.append (70)
+print(numbers_list)
+del numbers_list[7]
+print(numbers_list)
+#sort in ascending order
+sorted(numbers_list)
+print(numbers_list)
+numbers_list.sort(reverse=True)
+print(numbers_list)
+# find the index number
+index_of_30=numbers_list.index(30)
+print(numbers_list)
