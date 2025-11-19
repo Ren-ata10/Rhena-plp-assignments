@@ -1,0 +1,42 @@
+class Smartphone:
+    def __init__(self, brand, total_storage):
+        self.brand = brand
+        self.total_storage = total_storage
+        self.used_storage = 0
+        self.installed_apps = []
+
+    def free_storage(self):
+        return self.total_storage - self.used_storage
+
+    def install_app(self, app):
+        if app.size <= self.free_storage():
+            self.installed_apps.append(app)
+            self.used_storage += app.size
+            print(f"Installed: {app.name}")
+        else:
+            print(f"Not enough storage to install {app.name}.")
+            print(f"Required: {app.size} MB | Free: {self.free_storage()} MB")
+
+    def uninstall_app(self, app_name):
+        for app in self.installed_apps:
+            if app.name == app_name:
+                self.installed_apps.remove(app)
+                self.used_storage -= app.size
+                print(f"Uninstalled: {app_name}")
+                return
+        print(f"{app_name} is not installed.")
+
+    def show_storage(self):
+        print("\n--- STORAGE INFO ---")
+        print(f"Total storage: {self.total_storage} MB")
+        print(f"Used storage : {self.used_storage} MB")
+        print(f"Free storage : {self.free_storage()} MB")
+        print("---------------------\n")
+
+    def show_apps(self):
+        if not self.installed_apps:
+            print("No apps installed.")
+        else:
+            print("Installed apps:")
+            for app in self.installed_apps:
+                print(" -", app)
