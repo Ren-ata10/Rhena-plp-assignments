@@ -1,0 +1,24 @@
+filename = input("Enter the filename to read: ")
+
+try:
+    with open(filename, "r") as f:
+        content = f.read()
+
+        # Check if file is empty
+        if not content.strip():       # strip removes spaces/newlines
+            print("Error: The file is empty.")
+        else:
+            print("File content:")
+            print(content)
+
+except FileNotFoundError:
+    print("Error: The file does not exist or cannot be found.")
+
+except PermissionError:
+    print("Error: You do not have permission to read that file.")
+
+except Exception as e:
+    print("An unexpected error occurred:", e)
+
+finally:
+    print("Program finished running.")
