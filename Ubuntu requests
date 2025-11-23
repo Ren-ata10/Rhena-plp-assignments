@@ -1,0 +1,217 @@
+import requests
+import os
+import hashlib
+import tempfile
+import time
+from urllib.parse import urlparse, unquote
+import re
+
+# Configuration
+OUTPUT_DIR = "Fetched_Images"
+HASH_DB = os.path.join(OUTPUT_DIR, "hashes.txt")   # persistent store of seen hashes
+MAX_BYTES = 10 * 1024 * 1024   # 10 MB max file size by default (adjust as needed)
+TIMEOUT = 10                   # network timeout seconds
+USER_AGENT = "UbuntuImageFetcher/1.0 (+https://example.com/)"  # polite user agent
+
+# Helpers ---------------------------------------------------------------------
+
+def ensure_output_dir():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    if not os.path.exists(HASH_DB):
+        with open(HASH_DB, "w") as f:
+            pass
+
+def load_known_hashes():
+    """Return a set of known sha256 hashes (strings)."""
+    if not os.path.exists(HASH_DB):
+        return set()
+    with open(HASH_DB, "r") as f:
+        return set(line.strip() for line in f if line.strip())
+
+def save_hash(new_hash):
+    """Append a new hash to the persistent file."""
+    with open(HASH_DB, "a") as f:
+        f.write(new_hash + "\n")
+
+def sanitize_filename(name):
+    """Return a safe filename (strip path, remove problematic chars)."""
+    name = unquote(name)
+    name = os.path.basename(name)   # remove directories
+    # Replace spaces and unsafe chars
+    name = re.sub(r"[^\w\-.() ]+", "_", name)
+    return name or "downloaded_image"
+
+def choose_filename(parsed_url, headers):
+    """Decide filename using Content-Disposition, URL path, and content-type."""
+    # 1) Content-Disposition header (if provided)
+    cd = headers.get("content-disposition")
+    if cd:
+        # simple parse for filename=
+        match = re.search(r"filename\*=UTF-8''(?P<f>[^;]+)", cd)
+        if not match:
+            match = re.search(r'filename="?([^";]+)"?', cd)
+        if match:
+            return sanitize_filename(match.group(1))
+
+    # 2) URL path basename
+    path_name = os.path.basename(parsed_url.path)
+    if path_name:
+        return sanitize_filename(path_name)
+
+    # 3) fallback name with extension from content-type
+    ct = headers.get("content-type", "")
+    ext = ""
+    if "/" in ct:
+        ext = "." + ct.split("/")[-1].split(";")[0]
+    return sanitize_filename("downloaded_image" + ext)
+
+def unique_filepath(filename):
+    """If filename exists, append a counter to avoid overwriting."""
+    base, ext = os.path.splitext(filename)
+    candidate = filename
+    i = 1
+    while os.path.exists(os.path.join(OUTPUT_DIR, candidate)):
+        candidate = f"{base}_{i}{ext}"
+        i += 1
+    return os.path.join(OUTPUT_DIR, candidate)
+
+def stream_and_hash_download(resp, limit=MAX_BYTES):
+    """
+    Stream response content to a temporary file while computing sha256 hash.
+    Returns (sha256_hex, temp_filepath, total_bytes_read)
+    Raises ValueError if file too large.
+    """
+    sha = hashlib.sha256()
+    total = 0
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp_name = tmp.name
+        for chunk in resp.iter_content(chunk_size=8192):
+            if chunk:  # filter keep-alive chunks
+                total += len(chunk)
+                if total > limit:
+                    tmp.close()
+                    os.remove(tmp_name)
+                    raise ValueError(f"File exceeds size limit of {limit} bytes")
+                tmp.write(chunk)
+                sha.update(chunk)
+    return sha.hexdigest(), tmp_name, total
+
+# Main logic -----------------------------------------------------------------
+
+def process_url(url, known_hashes):
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        print(f" - Skipping (invalid or missing scheme): {url}")
+        return known_hashes
+
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "image/*, */*;q=0.1"
+    }
+
+    try:
+        # 1) HEAD request to inspect headers before downloading
+        try:
+            head = requests.head(url, headers=headers, allow_redirects=True, timeout=TIMEOUT)
+            head.raise_for_status()
+            header_map = {k.lower(): v for k, v in head.headers.items()}
+        except requests.RequestException:
+            # some servers don't support HEAD properly; fallback to GET with stream
+            header_map = {}
+
+        # 2) Inspect important headers (if available)
+        content_type = header_map.get("content-type")
+        content_length = header_map.get("content-length")
+        etag = header_map.get("etag")
+        # Quick header-based checks
+        if content_type and not content_type.lower().startswith("image/"):
+            print(f" - Skipping (content-type not image): {url} (content-type: {content_type})")
+            return known_hashes
+
+        if content_length:
+            try:
+                if int(content_length) > MAX_BYTES:
+                    print(f" - Skipping (content-length {content_length} bytes exceeds limit): {url}")
+                    return known_hashes
+            except ValueError:
+                pass  # if content-length is malformed, continue to GET
+
+        # 3) Now GET with streaming
+        resp = requests.get(url, headers=headers, stream=True, timeout=TIMEOUT)
+        resp.raise_for_status()
+
+        # use combined headers (GET overrides HEAD if present)
+        header_map.update({k.lower(): v for k, v in resp.headers.items()})
+
+        # 4) final content-type check
+        ct = header_map.get("content-type", "")
+        if ct and not ct.lower().startswith("image/"):
+            print(f" - Skipping after GET (content-type not image): {url} (content-type: {ct})")
+            return known_hashes
+
+        # 5) Stream and hash while writing to temp file (size-limited)
+        try:
+            file_hash, tmp_path, bytes_read = stream_and_hash_download(resp, limit=MAX_BYTES)
+        except ValueError as ve:
+            print(f" - Skipping (size limit): {url} -> {ve}")
+            return known_hashes
+
+        # 6) Duplicate check
+        if file_hash in known_hashes:
+            print(f" - Duplicate detected (hash match), skipping: {url}")
+            os.remove(tmp_path)
+            return known_hashes
+
+        # 7) Choose filename and move temp file
+        filename = choose_filename(parsed, header_map)
+        outpath = unique_filepath(filename)
+        os.replace(tmp_path, outpath)  # atomic-ish move
+        save_hash(file_hash)
+        known_hashes.add(file_hash)
+
+        print(f"✓ Fetched: {url}")
+        print(f"  Saved as: {outpath} ({bytes_read} bytes, sha256={file_hash[:12]}...)")
+
+    except requests.exceptions.RequestException as e:
+        print(f"✗ Network error for {url}: {e}")
+    except Exception as e:
+        print(f"✗ Error processing {url}: {e}")
+
+    return known_hashes
+
+def main():
+    print("Welcome to the Ubuntu Image Fetcher (multi-URL safe mode)\n")
+    print("Enter one or more image URLs separated by commas, or prefix a filename with @ to read URLs from a file.")
+    print("Examples:")
+    print("  https://example.com/pic.jpg,https://site.com/a.png")
+    print("  @urls.txt   (each line in urls.txt is a URL)\n")
+
+    raw = input("Enter URLs or @file: ").strip()
+    if not raw:
+        print("No input provided. Exiting.")
+        return
+
+    if raw.startswith("@"):
+        file_path = raw[1:]
+        if not os.path.exists(file_path):
+            print(f"File not found: {file_path}")
+            return
+        with open(file_path, "r") as f:
+            urls = [line.strip() for line in f if line.strip()]
+    else:
+        # split by comma and newline
+        urls = [u.strip() for u in re.split(r"[,\n]+", raw) if u.strip()]
+
+    ensure_output_dir()
+    known_hashes = load_known_hashes()
+
+    for url in urls:
+        known_hashes = process_url(url, known_hashes)
+        # polite pause to avoid hammering a server
+        time.sleep(0.2)
+
+    print("\nDone. Stored images in:", OUTPUT_DIR)
+    print("Note: hashes persisted in", HASH_DB)
+
+if __name__ == "__main__":
+    main()
