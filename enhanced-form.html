@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced HTML5 Form with Multimedia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            opacity: 0.9;
+        }
+        
+        section {
+            padding: 2rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        section:last-child {
+            border-bottom: none;
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        h3 {
+            color: #764ba2;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #f0f0f0;
+        }
+        
+        .media-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .media-item {
+            text-align: center;
+        }
+        
+        audio, video {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        fieldset {
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #f8f9ff;
+        }
+        
+        legend {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0 0.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        input:invalid:not(:placeholder-shown) {
+            border-color: #e74c3c;
+        }
+        
+        input:valid:not(:placeholder-shown) {
+            border-color: #27ae60;
+        }
+        
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .radio-item, .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .radio-item input, .checkbox-item input {
+            width: auto;
+            cursor: pointer;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        small {
+            color: #666;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Enhanced HTML5 Demonstration</h1>
+            <p>Showcasing Lists, Tables, Media, and Advanced Forms</p>
+        </header>
+        
+        <!-- Lists Section -->
+        <section id="lists">
+            <h2>Course Requirements</h2>
+            <h3>Unordered List: Key Skills</h3>
+            <ul>
+                <li>HTML5 semantic elements and structure</li>
+                <li>CSS styling and responsive design principles</li>
+                <li>Form validation and accessibility standards</li>
+                <li>Multimedia integration and optimization</li>
+            </ul>
+            
+            <h3>Ordered List: Learning Path</h3>
+            <ol>
+                <li>Master HTML fundamentals and document structure</li>
+                <li>Learn CSS for styling and layout</li>
+                <li>Understand form elements and validation</li>
+                <li>Implement responsive design patterns</li>
+                <li>Deploy and test web applications</li>
+            </ol>
+            
+            <h3>Nested List: Web Technologies</h3>
+            <ul>
+                <li>Frontend Technologies
+                    <ul>
+                        <li>HTML5 - Structure and semantics</li>
+                        <li>CSS3 - Styling and animations</li>
+                        <li>JavaScript - Interactivity and logic</li>
+                    </ul>
+                </li>
+                <li>Backend Technologies
+                    <ul>
+                        <li>Node.js - Server-side JavaScript</li>
+                        <li>Python - Data processing and APIs</li>
+                        <li>SQL - Database management</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        
+        <!-- Tables Section -->
+        <section id="tables">
+            <h2>Course Schedule</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Topic</th>
+                        <th>Assignment</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>HTML Fundamentals</td>
+                        <td>Create a personal webpage</td>
+                        <td>Jan 15, 2025</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>CSS Styling</td>
+                        <td>Style the personal webpage</td>
+                        <td>Jan 22, 2025</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Forms and Validation</td>
+                        <td>Build a contact form</td>
+                        <td>Jan 29, 2025</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Responsive Design</td>
+                        <td>Make webpage mobile-friendly</td>
+                        <td>Feb 5, 2025</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Final Project</td>
+                        <td>Complete portfolio website</td>
+                        <td>Feb 12, 2025</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Media Section -->
+        <section id="media">
+            <h2>Multimedia Content</h2>
+            <div class="media-container">
+                <div class="media-item">
+                    <h3>Sample Image</h3>
+                    <img src="https://via.placeholder.com/400x300/667eea/ffffff?text=Web+Development" alt="Web Development Illustration">
+                    <p><small>Responsive web design illustration</small></p>
+                </div>
+                
+                <div class="media-item">
+                    <h3>Sample Audio</h3>
+                    <audio controls>
+                        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <p><small>Background music sample</small></p>
+                </div>
+            </div>
+            
+            <div class="media-item" style="margin-top: 1.5rem;">
+                <h3>Sample Video</h3>
+                <video controls poster="https://via.placeholder.com/800x450/764ba2/ffffff?text=Video+Tutorial">
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    Your browser does not support the video element.
+                </video>
+                <p><small>HTML5 tutorial video</small></p>
+            </div>
+        </section>
+        
+        <!-- Form Section -->
+        <section id="form">
+            <h2>Student Registration Form</h2>
+            <div class="note">
+                <strong>Note:</strong> This form uses HTML5 native validation. Try submitting without filling required fields to see validation in action.
+            </div>
+            
+            <form action="/submit" method="post">
+                <!-- Personal Information -->
+                <fieldset>
+                    <legend>Personal Information</legend>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName" 
+                                placeholder="John"
+                                required
+                                minlength="2"
+                                maxlength="50"
+                                pattern="[A-Za-z\s]+"
+                                title="Only letters and spaces allowed"
+                                autocomplete="given-name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName" 
+                                placeholder="Doe"
+                                required
+                                minlength="2"
+                                maxlength="50"
+                                pattern="[A-Za-z\s]+"
+                                title="Only letters and spaces allowed"
+                                autocomplete="family-name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="john.doe@example.com"
+                            required
+                            autocomplete="email">
+                        <small>We'll never share your email with anyone else.</small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone" 
+                                placeholder="+254-700-000000"
+                                required
+                                pattern="[+]?[0-9]{1,4}[-\s]?[(]?[0-9]{1,4}[)]?[-\s]?[0-9]{1,4}[-\s]?[0-9]{1,9}"
+                                title="Enter a valid phone number"
+                                autocomplete="tel">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dob">Date of Birth *</label>
+                            <input 
+                                type="date" 
+                                id="dob" 
+                                name="dob" 
+                                required
+                                min="1950-01-01"
+                                max="2010-12-31"
+                                autocomplete="bday">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="studentId">Student ID (Read-only)</label>
+                        <input 
+                            type="text" 
+                            id="studentId" 
+                            name="studentId" 
+                            value="STU-2025-001234"
+                            readonly>
+                    </div>
+                </fieldset>
+                
+                <!-- Academic Information -->
+                <fieldset>
+                    <legend>Academic Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="program">Program of Study *</label>
+                        <select id="program" name="program" required>
+                            <option value="">-- Select a Program --</option>
+                            <option value="cs">Computer Science</option>
+                            <option value="webdev">Web Development</option>
+                            <option value="design">Graphic Design</option>
+                            <option value="marketing">Digital Marketing</option>
+                            <option value="data">Data Science</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gpa">Current GPA</label>
+                            <input 
+                                type="number" 
+                                id="gpa" 
+                                name="gpa" 
+                                placeholder="3.75"
+                                min="0.0"
+                                max="4.0"
+                                step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="credits">Completed Credits *</label>
+                            <input 
+                                type="number" 
+                                id="credits" 
+                                name="credits" 
+                                placeholder="60"
+                                required
+                                min="0"
+                                max="200"
+                                step="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="enrollment">Enrollment Type *</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input 
+                                    type="radio" 
+                                    id="fullTime" 
+                                    name="enrollment" 
+                                    value="fulltime"
+                                    required>
+                                <label for="fullTime">Full-Time</label>
+                            </div>
+                            <div class="radio-item">
+                                <input 
+                                    type="radio" 
+                                    id="partTime" 
+                                    name="enrollment" 
+                                    value="parttime"
+                                    required>
+                                <label for="partTime">Part-Time</label>
+                            </div>
+                            <div class="radio-item">
+                                <input 
+                                    type="radio" 
+                                    id="online" 
+                                    name="enrollment" 
+                                    value="online"
+                                    required>
+                                <label for="online">Online</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interests">Areas of Interest</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="frontend" name="interests" value="frontend">
+                                <label for="frontend">Frontend Development</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="backend" name="interests" value="backend">
+                                <label for="backend">Backend Development</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="mobile" name="interests" value="mobile">
+                                <label for="mobile">Mobile Development</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="uiux" name="interests" value="uiux">
+                                <label for="uiux">UI/UX Design</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Additional Information -->
+                <fieldset>
+                    <legend>Additional Information</legend>
+                    
+                    <div class="form-group">
+                        <label for="website">Personal Website / Portfolio</label>
+                        <input 
+                            type="url" 
+                            id="website" 
+                            name="website" 
+                            placeholder="https://www.example.com"
+                            autocomplete="url">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Create Password *</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Enter a strong password"
+                            required
+                            minlength="8"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                            title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 characters"
+                            autocomplete="new-password">
+                        <small>Must be at least 8 characters with uppercase, lowercase, and numbers.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="color">Favorite Color</label>
+                        <input 
+                            type="color" 
+                            id="color" 
+                            name="color" 
+                            value="#667eea">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="graduationDate">Expected Graduation</label>
+                        <input 
+                            type="month" 
+                            id="graduationDate" 
+                            name="graduationDate" 
+                            min="2025-01"
+                            max="2030-12">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comments">Additional Comments</label>
+                        <textarea 
+                            id="comments" 
+                            name="comments" 
+                            rows="5"
+                            placeholder="Tell us about your goals and expectations..."
+                            maxlength="500"></textarea>
+                        <small>Maximum 500 characters</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-item">
+                            <input 
+                                type="checkbox" 
+                                id="terms" 
+                                name="terms" 
+                                required>
+                            <label for="terms">I agree to the terms and conditions *</label>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <button type="submit">Submit Registration</button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>
