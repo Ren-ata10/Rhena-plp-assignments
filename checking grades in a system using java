@@ -1,0 +1,293 @@
+// ============================================
+// PART 1: VARIABLE DECLARATIONS & CONDITIONALS
+// ============================================
+
+// Variable declarations using different types
+const passingGrade = 50;
+let studentName = "John Doe";
+var totalStudents = 0;
+
+// Student grades array
+let studentGrades = [45, 78, 92, 34, 67, 88, 55, 41, 73, 96];
+
+// Conditional example - Check if student passed
+let studentScore = 75;
+
+if (studentScore >= passingGrade) {
+    console.log(`Score ${studentScore}: PASSED`);
+} else {
+    console.log(`Score ${studentScore}: FAILED`);
+}
+
+// Multiple conditions using else if
+let grade = 85;
+let letterGrade;
+
+if (grade >= 90) {
+    letterGrade = "A";
+} else if (grade >= 80) {
+    letterGrade = "B";
+} else if (grade >= 70) {
+    letterGrade = "C";
+} else if (grade >= 60) {
+    letterGrade = "D";
+} else {
+    letterGrade = "F";
+}
+
+console.log(`Grade ${grade} = Letter Grade: ${letterGrade}`);
+
+// Ternary operator (conditional)
+let status = studentScore >= passingGrade ? "Pass" : "Fail";
+console.log(`Status: ${status}`);
+
+
+// ============================================
+// PART 2: CUSTOM FUNCTIONS
+// ============================================
+
+// Function 1: Calculate average grade
+function calculateAverage(grades) {
+    let sum = 0;
+    for (let i = 0; i < grades.length; i++) {
+        sum += grades[i];
+    }
+    let average = sum / grades.length;
+    return average.toFixed(2);
+}
+
+// Function 2: Determine letter grade from score
+function getLetterGrade(score) {
+    if (score >= 90) {
+        return "A";
+    } else if (score >= 80) {
+        return "B";
+    } else if (score >= 70) {
+        return "C";
+    } else if (score >= 60) {
+        return "D";
+    } else {
+        return "F";
+    }
+}
+
+// Function 3: Check if grade is passing
+function isPassing(score) {
+    return score >= passingGrade;
+}
+
+// Function 4: Get grade statistics
+function getGradeStats(grades) {
+    let passed = 0;
+    let failed = 0;
+    let highest = grades[0];
+    let lowest = grades[0];
+
+    for (let grade of grades) {
+        // Count pass/fail
+        if (grade >= passingGrade) {
+            passed++;
+        } else {
+            failed++;
+        }
+
+        // Find highest and lowest
+        if (grade > highest) {
+            highest = grade;
+        }
+        if (grade < lowest) {
+            lowest = grade;
+        }
+    }
+
+    return {
+        passed: passed,
+        failed: failed,
+        highest: highest,
+        lowest: lowest,
+        total: grades.length
+    };
+}
+
+// Test the functions
+console.log("\n=== FUNCTION TESTS ===");
+console.log("Average Grade:", calculateAverage(studentGrades));
+console.log("Letter Grade for 85:", getLetterGrade(85));
+console.log("Is 75 passing?", isPassing(75));
+
+let stats = getGradeStats(studentGrades);
+console.log("Grade Statistics:", stats);
+
+
+// ============================================
+// PART 3: LOOPS
+// ============================================
+
+console.log("\n=== LOOP EXAMPLES ===");
+
+// Loop 1: For loop - Display all grades with status
+console.log("\nAll Student Grades:");
+for (let i = 0; i < studentGrades.length; i++) {
+    let grade = studentGrades[i];
+    let status = grade >= passingGrade ? "PASS" : "FAIL";
+    let letter = getLetterGrade(grade);
+    console.log(`Student ${i + 1}: ${grade} - ${letter} - ${status}`);
+}
+
+// Loop 2: While loop - Count passing grades
+console.log("\nCounting Passing Grades:");
+let index = 0;
+let passCount = 0;
+
+while (index < studentGrades.length) {
+    if (studentGrades[index] >= passingGrade) {
+        passCount++;
+    }
+    index++;
+}
+console.log(`Total Passing: ${passCount} out of ${studentGrades.length}`);
+
+// Loop 3: For...of loop - List only failing grades
+console.log("\nFailing Grades:");
+for (let grade of studentGrades) {
+    if (grade < passingGrade) {
+        console.log(`Grade ${grade} - FAILED`);
+    }
+}
+
+// Loop 4: forEach loop - Create grade summary
+console.log("\nGrade Summary:");
+studentGrades.forEach((grade, index) => {
+    console.log(`Position ${index + 1}: ${grade} (${getLetterGrade(grade)})`);
+});
+
+
+// ============================================
+// PART 4: DOM INTERACTIONS
+// ============================================
+
+// Wait for DOM to load before running
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("\n=== DOM INTERACTIONS ===");
+    
+    // DOM Interaction 1: Display average grade
+    const averageElement = document.getElementById('average-grade');
+    if (averageElement) {
+        let avg = calculateAverage(studentGrades);
+        averageElement.textContent = avg;
+        averageElement.style.fontSize = '2rem';
+        averageElement.style.color = '#667eea';
+    }
+
+    // DOM Interaction 2: Display grade statistics
+    const statsElement = document.getElementById('stats-container');
+    if (statsElement) {
+        let stats = getGradeStats(studentGrades);
+        statsElement.innerHTML = `
+            <div class="stat">Total Students: ${stats.total}</div>
+            <div class="stat">Passed: ${stats.passed}</div>
+            <div class="stat">Failed: ${stats.failed}</div>
+            <div class="stat">Highest: ${stats.highest}</div>
+            <div class="stat">Lowest: ${stats.lowest}</div>
+        `;
+    }
+
+    // DOM Interaction 3: Display all grades in a table
+    const gradesTableBody = document.getElementById('grades-table-body');
+    if (gradesTableBody) {
+        studentGrades.forEach((grade, index) => {
+            let row = document.createElement('tr');
+            let letter = getLetterGrade(grade);
+            let status = isPassing(grade) ? 'PASS' : 'FAIL';
+            let statusClass = isPassing(grade) ? 'pass' : 'fail';
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${grade}</td>
+                <td>${letter}</td>
+                <td class="${statusClass}">${status}</td>
+            `;
+            
+            gradesTableBody.appendChild(row);
+        });
+    }
+
+    // DOM Interaction 4: Button to check a custom grade
+    const checkButton = document.getElementById('check-grade-btn');
+    const gradeInput = document.getElementById('grade-input');
+    const resultDisplay = document.getElementById('result-display');
+
+    if (checkButton && gradeInput && resultDisplay) {
+        checkButton.addEventListener('click', function() {
+            let inputGrade = parseInt(gradeInput.value);
+            
+            // Validate input
+            if (isNaN(inputGrade) || inputGrade < 0 || inputGrade > 100) {
+                resultDisplay.innerHTML = '<p style="color: red;">Please enter a valid grade (0-100)</p>';
+                return;
+            }
+
+            // Calculate results
+            let letter = getLetterGrade(inputGrade);
+            let status = isPassing(inputGrade) ? 'PASS' : 'FAIL';
+            let statusColor = isPassing(inputGrade) ? 'green' : 'red';
+
+            // Display result
+            resultDisplay.innerHTML = `
+                <div style="padding: 1rem; border-radius: 8px; background: #f8f9fa;">
+                    <h3>Result for Grade ${inputGrade}:</h3>
+                    <p><strong>Letter Grade:</strong> ${letter}</p>
+                    <p><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: bold;">${status}</span></p>
+                </div>
+            `;
+        });
+    }
+
+    // DOM Interaction 5: Highlight passing/failing grades
+    const highlightButton = document.getElementById('highlight-btn');
+    if (highlightButton) {
+        highlightButton.addEventListener('click', function() {
+            const rows = document.querySelectorAll('#grades-table-body tr');
+            rows.forEach(row => {
+                const gradeCell = row.cells[1];
+                const grade = parseInt(gradeCell.textContent);
+                
+                if (grade >= passingGrade) {
+                    row.style.backgroundColor = '#d4edda';
+                } else {
+                    row.style.backgroundColor = '#f8d7da';
+                }
+            });
+        });
+    }
+
+    console.log("DOM interactions initialized successfully!");
+});
+
+
+// ============================================
+// ADDITIONAL DEMONSTRATIONS
+// ============================================
+
+// Array methods demonstration
+console.log("\n=== ARRAY METHODS ===");
+
+// Filter: Get only passing grades
+let passingGrades = studentGrades.filter(grade => grade >= passingGrade);
+console.log("Passing Grades:", passingGrades);
+
+// Map: Add 5 bonus points to all grades
+let bonusGrades = studentGrades.map(grade => grade + 5);
+console.log("Grades with Bonus:", bonusGrades);
+
+// Reduce: Calculate total points
+let totalPoints = studentGrades.reduce((total, grade) => total + grade, 0);
+console.log("Total Points:", totalPoints);
+
+// Some: Check if any student got 100
+let hasPerfectScore = studentGrades.some(grade => grade === 100);
+console.log("Has Perfect Score:", hasPerfectScore);
+
+// Every: Check if all students passed
+let allPassed = studentGrades.every(grade => grade >= passingGrade);
+console.log("All Students Passed:", allPassed);
